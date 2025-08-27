@@ -26,7 +26,7 @@ export function UserProfile() {
     });
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field, value) => {
     setProfile(prev => ({ ...prev, [field]: value }));
   };
 

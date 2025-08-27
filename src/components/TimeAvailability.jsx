@@ -16,7 +16,7 @@ const timeSlots = [
 
 export function TimeAvailability() {
   const { toast } = useToast();
-  const [availability, setAvailability] = useState<Record<string, string[]>>({
+  const [availability, setAvailability] = useState({
     Monday: ["09:00", "10:00", "11:00"],
     Tuesday: ["09:00", "10:00", "11:00"],
     Wednesday: ["09:00", "10:00", "11:00"],
@@ -26,7 +26,7 @@ export function TimeAvailability() {
     Sunday: []
   });
 
-  const toggleTimeSlot = (day: string, time: string) => {
+  const toggleTimeSlot = (day, time) => {
     setAvailability(prev => ({
       ...prev,
       [day]: prev[day].includes(time)

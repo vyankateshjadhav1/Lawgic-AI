@@ -40,7 +40,7 @@ const appointments = [
 ];
 
 export function ScheduledAppointments() {
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status) => {
     switch (status) {
       case "confirmed":
         return "bg-success/10 text-success border-success/20";
