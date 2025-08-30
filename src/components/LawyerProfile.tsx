@@ -33,7 +33,7 @@ export function LawyerProfile() {
     });
   };
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: string, value: string) => {
     setProfile(prev => ({ ...prev, [field]: value }));
   };
 
@@ -47,7 +47,7 @@ export function LawyerProfile() {
     }
   };
 
-  const removeSpecialty = (index) => {
+  const removeSpecialty = (index: number) => {
     setProfile(prev => ({
       ...prev,
       specialties: prev.specialties.filter((_, i) => i !== index)

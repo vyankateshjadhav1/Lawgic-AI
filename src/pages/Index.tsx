@@ -9,7 +9,7 @@ import userIcon from "@/assets/user-icon.png";
 const Index = () => {
   const navigate = useNavigate();
 
-  const handleRoleSelect = (role) => {
+  const handleRoleSelect = (role: "lawyer" | "user") => {
     navigate(`/auth?role=${role}`);
   };
 

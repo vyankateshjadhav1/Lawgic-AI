@@ -12,6 +12,11 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
+interface LawyerSidebarProps {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}
+
 const menuItems = [
   { id: "appointments", title: "Scheduled Appointments", icon: Calendar },
   { id: "requests", title: "Appointment Requests", icon: FileText },
@@ -19,7 +24,7 @@ const menuItems = [
   { id: "profile", title: "Profile", icon: User },
 ];
 
-export function LawyerSidebar({ activeTab, setActiveTab }) {
+export function LawyerSidebar({ activeTab, setActiveTab }: LawyerSidebarProps) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
 

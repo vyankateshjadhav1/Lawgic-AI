@@ -47,10 +47,10 @@ const requests = [
 
 export function AppointmentRequests() {
   const { toast } = useToast();
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState<number | null>(null);
   const [responseMessage, setResponseMessage] = useState("");
 
-  const handleApprove = (requestId) => {
+  const handleApprove = (requestId: number) => {
     toast({
       title: "Appointment Approved",
       description: "The appointment request has been approved and the client has been notified.",
@@ -58,7 +58,7 @@ export function AppointmentRequests() {
     });
   };
 
-  const handleDecline = (requestId) => {
+  const handleDecline = (requestId: number) => {
     if (responseMessage.trim()) {
       toast({
         title: "Appointment Declined",
@@ -70,7 +70,7 @@ export function AppointmentRequests() {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
         return "bg-warning/10 text-warning border-warning/20";

@@ -9,7 +9,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const role = searchParams.get("role");
+  const role = searchParams.get("role") as "lawyer" | "user";
   const [isSignUp, setIsSignUp] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -19,7 +19,7 @@ const Auth = () => {
     phone: ""
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate authentication
     if (role === "lawyer") {
@@ -29,7 +29,7 @@ const Auth = () => {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
