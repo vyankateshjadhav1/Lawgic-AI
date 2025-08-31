@@ -3,9 +3,16 @@ import { Button } from "@/components/ui/button";
 import { UserProfile } from "@/components/UserProfile";
 import { Search, Calendar, MessageCircle, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const UserDashboard = () => {
   const navigate = useNavigate();
+  const { signOut, profile } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -20,7 +27,7 @@ const UserDashboard = () => {
               <Button variant="ghost" size="icon">
                 <Bell className="h-5 w-5" />
               </Button>
-              <Button variant="outline" onClick={() => navigate("/")}>
+              <Button variant="outline" onClick={handleLogout}>
                 Logout
               </Button>
             </div>

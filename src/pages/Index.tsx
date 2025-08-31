@@ -2,19 +2,56 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Scale, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 import legalHero from "@/assets/legal-hero.jpg";
 import lawyerIcon from "@/assets/lawyer-icon.png";
 import userIcon from "@/assets/user-icon.png";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, profile, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && isAuthenticated && profile) {
+      // Redirect authenticated users to their dashboard
+      if (profile.user_type === "lawyer") {
+        navigate("/lawyer-dashboard");
+      } else {
+        navigate("/user-dashboard");
+      }
+    }
+  }, [isAuthenticated, profile, loading, navigate]);
 
   const handleRoleSelect = (role: "lawyer" | "user") => {
     navigate(`/auth?role=${role}`);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-hero">
+      {/* Header */}
+      <header className="bg-card/95 backdrop-blur-sm border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <Scale className="h-8 w-8 text-primary" />
+              <h1 className="text-xl font-bold text-primary">Lawgic AI</h1>
+            </div>
+            <Button variant="outline" onClick={() => navigate("/auth")}>
+              Sign In
+            </Button>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <div className="relative">
         <div

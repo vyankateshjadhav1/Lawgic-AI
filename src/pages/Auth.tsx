@@ -1,31 +1,146 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, Scale, User } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const role = searchParams.get("role") as "lawyer" | "user";
   const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
-    name: "",
-    phone: ""
+    fullName: "",
+    phone: "",
+    userType: role || "user" as "lawyer" | "user"
   });
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("user_type")
+          .eq("user_id", session.user.id)
+          .single();
+        
+        if (profile?.user_type === "lawyer") {
+          navigate("/lawyer-dashboard");
+        } else {
+          navigate("/user-dashboard");
+        }
+      }
+    };
+    checkUser();
+  }, [navigate]);
+
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      toast({
+        title: "Error",
+        description: "Email and password are required",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (isSignUp) {
+      if (!formData.fullName) {
+        toast({
+          title: "Error",
+          description: "Full name is required",
+          variant: "destructive"
+        });
+        return false;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        toast({
+          title: "Error",
+          description: "Passwords do not match",
+          variant: "destructive"
+        });
+        return false;
+      }
+      if (formData.password.length < 6) {
+        toast({
+          title: "Error",
+          description: "Password must be at least 6 characters long",
+          variant: "destructive"
+        });
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate authentication
-    if (role === "lawyer") {
-      navigate("/lawyer-dashboard");
-    } else {
-      navigate("/user-dashboard");
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              full_name: formData.fullName,
+              user_type: formData.userType === "user" ? "client" : formData.userType,
+              phone: formData.phone
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Check your email to confirm your account",
+        });
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("user_type")
+            .eq("user_id", data.user.id)
+            .single();
+          
+          if (profile?.user_type === "lawyer") {
+            navigate("/lawyer-dashboard");
+          } else {
+            navigate("/user-dashboard");
+          }
+        }
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -34,6 +149,10 @@ const Auth = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleUserTypeChange = (value: string) => {
+    setFormData({ ...formData, userType: value as "lawyer" | "user" });
   };
 
   return (
@@ -68,17 +187,34 @@ const Auth = () => {
 
             <form onSubmit={handleSubmit} className="w-full space-y-4">
               {isSignUp && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Enter your full name"
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input
+                      id="fullName"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+                  {!role && (
+                    <div className="space-y-2">
+                      <Label>I am a</Label>
+                      <RadioGroup value={formData.userType} onValueChange={handleUserTypeChange}>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="user" id="client" />
+                          <Label htmlFor="client">Client</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="lawyer" id="lawyer" />
+                          <Label htmlFor="lawyer">Lawyer</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  )}
+                </>
               )}
 
               <div className="space-y-2">
@@ -136,8 +272,8 @@ const Auth = () => {
                 </div>
               )}
 
-              <Button type="submit" className="w-full">
-                {isSignUp ? "Create Account" : "Sign In"}
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Loading..." : (isSignUp ? "Create Account" : "Sign In")}
               </Button>
             </form>
 
